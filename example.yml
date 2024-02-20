@@ -7,15 +7,15 @@ links:
   - icon: x
     url: https://twitter.com/orion_offi
 effects:
-  - background: night_time
-  - name: rainbow
-  - description: typewriter
+  background: night_time
+  name: rainbow
+  description: typewriter
 profile:
-  - blur: 10px
-  - opacity: 20
-  - avatar: avatar.png
-  - layout: left
-  - discord: 902671568856047636
-  - geolocation:
-        latitude: 48.569045
-        longitude: 7.6796789
+  blur: 10px
+  opacity: 20
+  avatar: avatar.png
+  layout: left
+  discord: 902671568856047636
+  geolocation:
+    latitude: 48.569045
+    longitude: 7.6796789
