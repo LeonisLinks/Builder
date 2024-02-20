@@ -131,3 +131,6 @@ dist
 
 # Jetbrains IDEs
 .idea
+
+# Specific for Builder
+config.yml
