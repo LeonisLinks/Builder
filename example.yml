@@ -4,8 +4,10 @@ background: bg.png
 links:
   - icon: github
     url: https://github.com/oriionn
+    color: #fafafa
   - icon: x
     url: https://twitter.com/orion_offi
+    color: #f5f8fa
 effects:
   background: night_time
   name: rainbow
