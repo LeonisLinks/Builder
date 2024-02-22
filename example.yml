@@ -1,18 +1,18 @@
 name: Orion
 description: Un développeur qui développe (en Javascript)
 background: bg.png
+background_blur: 5px
 links:
   - icon: github
     url: https://github.com/oriionn
-    color: #fafafa
+    color: "#fafafa"
   - icon: x
     url: https://twitter.com/orion_offi
-    color: #f5f8fa
+    color: "#f5f8fa"
 effects:
   background: night_time
   name: rainbow
   description: typewriter
-background_blur: 5px
 profile:
   blur: 10px
   opacity: 20

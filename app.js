@@ -31,8 +31,8 @@ let mapHTML;
 if (fs.existsSync("Leonis")) {
 	spinners[0].succeed("Leonis repository cloned successfully");
 	indexHTML = fs.readFileSync("./Leonis/index.html").toString();
-	log(indexHTML)
 	mapHTML = fs.readFileSync("./Leonis/map.html").toString();
+	styleCSS = fs.readFileSync("./Leonis/src/style.css").toString();
 } else {
 	spinners[0].fail("Error cloning Leonis repository");
 	process.exit(1);
@@ -50,6 +50,7 @@ try {
 	if (!parsedData) return spinners[1].fail(`Error loading ${input}: No data found`);
 	if (parsedData instanceof Error) return spinners[1].fail(`Error loading ${input}: ${parsedData.message}`);
 	if (!parsedData.name || !parsedData.description || !parsedData.background) return spinners[1].fail(`Error loading ${input}: Invalid data`);
+	if (!fs.existsSync(parsedData.background)) return spinners[1].fail(`Error loading ${parsedData.background}: File doesn't exists.`)
 
 	spinners[1].succeed(`${input} loaded`);
 } catch(e) {
@@ -133,6 +134,7 @@ if (parsedData.profile) {
 			informationEl += `<div id="texts" class="flex flex-col"><h1 class="text-5xl font-bold">${parsedData.name}</h1><p id="description" class="text-3xl mb-10">${parsedData.description}</p></div>`
 		}
 	}
+	styleCSS = styleCSS.replace("{TEXTLAYOUT}", layout);
 	bodyClass.push(`nd-${layout}`);
 	if (parsedData.profile.blur) {
 		parsedData.profile.blur = parsedData.profile.blur / 100;
@@ -157,7 +159,11 @@ if (parsedData.profile) {
 	}
 }
 
+
+
 indexHTML = indexHTML.replace("{WIDGETS}", widgets)
 indexHTML = indexHTML.replace("{BODYCLASS}", bodyClass.join(" "));
 indexHTML = indexHTML.replace("{SOCIALS}", links);
-log(indexHTML)
+styleCSS = styleCSS.replace("{BACKGROUND}", `./resources/${parsedData.background}`)
+styleCSS = styleCSS.replace("{BACKGROUNDBLUR}", parsedData.background_blur)
+log(styleCSS)
