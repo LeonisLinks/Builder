@@ -4,6 +4,8 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 const { execSync } = require('child_process');
 const path = require('path');
+const { log } = require('console');
+const { link } = require('fs/promises');
 
 const getResourcePath = (fileName) => { return path.join(__dirname, 'resources', fileName); }
 
@@ -23,10 +25,14 @@ if (fs.existsSync(output)) {
 	spinners[0].fail(`Output folder already exists`);
 	process.exit(1);
 }
-execSync("git clone https://github.com/LeonisLinks/Leonis.git", { stdio: "ignore" })
+execSync("git clone https://github.com/LeonisLinks/Leonis.git -b template", { stdio: "ignore" })
+let indexHTML;
+let mapHTML;
 if (fs.existsSync("Leonis")) {
 	spinners[0].succeed("Leonis repository cloned successfully");
-	fs.renameSync("Leonis", output);
+	indexHTML = fs.readFileSync("./Leonis/index.html").toString();
+	log(indexHTML)
+	mapHTML = fs.readFileSync("./Leonis/map.html").toString();
 } else {
 	spinners[0].fail("Error cloning Leonis repository");
 	process.exit(1);
@@ -153,5 +159,13 @@ if (parsedData.profile) {
 		widgets += `<div id="geo" class="w-[50%] mr-2 ml-2 rounded-xl max-[1670px]:w-full">
         	<iframe src="map.html" class="w-full h-[105px] max-[390px]:h-[55px] rounded-xl"></iframe>
       	</div>`;
+		mapHTML = mapHTML.replaceAll("{LAT}", parsedData.profile.geolocation.latitude)
+		mapHTML = mapHTML.replaceAll("{LNG}", parsedData.profile.geolocation.longitude)
 	}
 }
+
+indexHTML = indexHTML.replace("{WIDGETS}", widgets)
+indexHTML = indexHTML.replace("{BODYCLASS}", bodyClass.join(" "));
+log(links)
+indexHTML = indexHTML.replace("{SOCIALS}", links);
+log(indexHTML)
