@@ -12,6 +12,7 @@ effects:
   background: night_time
   name: rainbow
   description: typewriter
+background_blur: 5px
 profile:
   blur: 10px
   opacity: 20

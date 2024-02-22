@@ -55,6 +55,9 @@ spinners.push(ora('Parsing data').start());
 
 let bodyClass = [];
 let music;
+let layout = "center";
+let informationEl = "";
+let widgets = "";
 
 // Effects mapping
 let effects = {
@@ -112,5 +115,43 @@ if (parsedData.links) {
 		if (link.icon && link.url && link.color) {
 			links.push(`<a href="${link.url}" target="_blank" class="mr-5 mb-5"><custom-icon name="${link.icon}" size="32" color="${link.color}"></custom-icon></a>`);
 		}
+	}
+}
+
+if (parsedData.profile) {
+	if (parsedData.profile.avatar) {
+		if (fs.existsSync(getResourcePath(parsedData.profile.avatar))) {
+			bodyClass.push("avatar-include");
+			parsedData.profile.avatar = `./resources/${parsedData.profile.avatar}`;
+			informationEl = `<img src="${parsedData.profile.avatar}" alt="${parsedData.name}" class="rounded-full mb-2" id="avatar">`
+		}
+	}
+	if (parsedData.profile.layout) {
+		layout = parsedData.profile.layout;
+		if (layout === "center") {
+			informationEl += ` <h1 id="name" class="text-5xl font-bold">${parsedData.name}</h1><p id="description" class="text-3xl mb-10">${parsedData.description}</p>`
+		} else {
+			informationEl += `<div id="texts" class="flex flex-col"><h1 class="text-5xl font-bold">${parsedData.name}</h1><p id="description" class="text-3xl mb-10">${parsedData.description}</p></div>`
+		}
+	}
+	bodyClass.push(`nd-${layout}`);
+	if (parsedData.profile.blur) {
+		parsedData.profile.blur = parsedData.profile.blur / 100;
+	}
+
+	if (parsedData.profile.discord) {
+		widgets += `<div id="discord" class="p-5 rounded-xl w-[50%] mr-2 ml-2 flex flex-row max-[1670px]:w-full max-[1670px]:mb-5">
+        	<img src="https://cdn.discordapp.com/avatars/902671568856047636/df9b91c56efa46acd37844b6313c4090.png?size=1024" class="rounded-full max-[390px]:w-[32px] max-[390px]:h-[32px]" width="64px" height="64px" alt="orion_off">
+        	<div id="informations" class="flex flex-col ml-5">
+          	<span id="discord_name" class="text-2xl max-[390px]:text-sm max-[430px]:text-lg">orion_off</span>
+          		<span id="discord_status" class="text-xl max-[390px]:text-xs max-[430px]:text-base">Elsässisch</span>
+        	</div>
+      	</div>`;
+	}
+
+	if (parsedData.profile.geolocation) {
+		widgets += `<div id="geo" class="w-[50%] mr-2 ml-2 rounded-xl max-[1670px]:w-full">
+        	<iframe src="map.html" class="w-full h-[105px] max-[390px]:h-[55px] rounded-xl"></iframe>
+      	</div>`;
 	}
 }
