@@ -4,8 +4,9 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 const { execSync } = require('child_process');
 const path = require('path');
-const { log } = require('console');
-const { link } = require('fs/promises');
+const postcss = require("postcss");
+const tailwindcss = require("tailwindcss");
+const esbuild = require("esbuild");
 
 const getResourcePath = (fileName) => { return path.join(__dirname, 'resources', fileName); }
 
@@ -50,7 +51,7 @@ try {
 	if (!parsedData) return spinners[1].fail(`Error loading ${input}: No data found`);
 	if (parsedData instanceof Error) return spinners[1].fail(`Error loading ${input}: ${parsedData.message}`);
 	if (!parsedData.name || !parsedData.description || !parsedData.background) return spinners[1].fail(`Error loading ${input}: Invalid data`);
-	if (!fs.existsSync(parsedData.background)) return spinners[1].fail(`Error loading ${parsedData.background}: File doesn't exists.`)
+	if (!fs.existsSync("./resources/" + parsedData.background)) return spinners[1].fail(`Error loading ${parsedData.background}: File doesn't exists.`)
 
 	spinners[1].succeed(`${input} loaded`);
 } catch(e) {
@@ -123,7 +124,10 @@ if (parsedData.profile) {
 		if (fs.existsSync(getResourcePath(parsedData.profile.avatar))) {
 			bodyClass.push("avatar-include");
 			parsedData.profile.avatar = `./resources/${parsedData.profile.avatar}`;
-			informationEl = `<img src="${parsedData.profile.avatar}" alt="${parsedData.name}" class="rounded-full mb-2" id="avatar">`
+			informationEl = `<img src="${parsedData.profile.avatar}" alt="${parsedData.name}" class="rounded-full mb-2 mr-5" id="avatar">`
+		} else {
+			spinners[2].warn(`Resource file not found: ${parsedData.profile.avatar}`);
+			process.exit(1);
 		}
 	}
 	if (parsedData.profile.layout) {
@@ -136,9 +140,12 @@ if (parsedData.profile) {
 	}
 	styleCSS = styleCSS.replace("{TEXTLAYOUT}", layout);
 	bodyClass.push(`nd-${layout}`);
-	if (parsedData.profile.blur) {
-		parsedData.profile.blur = parsedData.profile.blur / 100;
+	if (parsedData.profile.opacity) {
+		parsedData.profile.opacity = parsedData.profile.opacity / 100;
+	} else {
+		parsedData.profile.opacity = 0.2;
 	}
+	styleCSS = styleCSS.replace("{OPACITY}", parsedData.profile.opacity);
 
 	if (parsedData.profile.discord) {
 		widgets += `<div id="discord" class="p-5 rounded-xl w-[50%] mr-2 ml-2 flex flex-row max-[1670px]:w-full max-[1670px]:mb-5">
@@ -159,11 +166,61 @@ if (parsedData.profile) {
 	}
 }
 
-
-
-indexHTML = indexHTML.replace("{WIDGETS}", widgets)
+indexHTML = indexHTML.replace("{WIDGETS}", widgets);
 indexHTML = indexHTML.replace("{BODYCLASS}", bodyClass.join(" "));
-indexHTML = indexHTML.replace("{SOCIALS}", links);
-styleCSS = styleCSS.replace("{BACKGROUND}", `./resources/${parsedData.background}`)
-styleCSS = styleCSS.replace("{BACKGROUNDBLUR}", parsedData.background_blur)
-log(styleCSS)
+if (parsedData.links) indexHTML = indexHTML.replace("{SOCIALS}", links);
+indexHTML = indexHTML.replace("{INFORMATION}", informationEl);
+styleCSS = styleCSS.replace("{BACKGROUND}", `../resources/${parsedData.background}`);
+if (!parsedData.profile.blur) parsedData.profile.blur = "10px";
+if (!parsedData.background_blur) parsedData.background_blur = "5px";
+styleCSS = styleCSS.replace("{BACKGROUNDBLUR}", parsedData.background_blur);
+styleCSS = styleCSS.replace("{BLUR}", parsedData.profile.blur);
+if (music) indexHTML = indexHTML.replace("{MUSIC}", music);
+spinners[2].succeed('Data parsed');
+
+// Writing files
+spinners.push(ora('Writing files').start());
+try {
+	fs.writeFileSync(`./Leonis/index.html`, indexHTML);
+	fs.writeFileSync(`./Leonis/map.html`, mapHTML);
+	fs.writeFileSync(`./Leonis/src/style.css`, styleCSS);
+
+	fs.cpSync("./resources", `./Leonis/resources`, { recursive: true });
+	spinners[3].succeed('Files written');
+} catch (e) {
+	spinners[3].fail('Error writing files');
+	process.exit(1);
+}
+
+// Building Tailwind
+spinners.push(ora('Building TailwindCSS').start());
+let baseConfig = require("./Leonis/tailwind.config.js");
+let css = styleCSS;
+const config = {
+	presets: [baseConfig],
+	content: [{ raw: indexHTML  }, { raw: mapHTML }]
+}
+
+postcss([tailwindcss(config)]).process(css, { from: undefined }).then(result => {
+	fs.writeFileSync(`./Leonis/src/app.css`, result.toString());
+	spinners[4].succeed('TailwindCSS built');
+}).catch(e => {
+	console.log(e);
+	spinners[4].fail('Error building TailwindCSS');
+	process.exit(1);
+})
+
+// Building TS
+spinners.push(ora('Building TypeScript').start());
+esbuild.build({
+	entryPoints: ["./Leonis/src/main.ts"],
+	bundle: true,
+	minify: true,
+	outfile: "./Leonis/src/main.js",
+	platform: "browser"
+}).then(() => {
+	spinners[5].succeed('TypeScript built');
+}).catch(e => {
+	spinners[5].fail('Error building TypeScript');
+	process.exit(1);
+});

@@ -5,10 +5,10 @@ background_blur: 5px
 links:
   - icon: github
     url: https://github.com/oriionn
-    color: "#fafafa"
+    color: "#181717"
   - icon: x
     url: https://twitter.com/orion_offi
-    color: "#f5f8fa"
+    color: "#0d0d0e"
 effects:
   background: night_time
   name: rainbow
