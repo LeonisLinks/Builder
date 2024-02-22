@@ -115,14 +115,7 @@ if (parsedData.music) {
 }
 
 // Links
-let links = [];
-if (parsedData.links) {
-	for (let link of parsedData.links) {
-		if (link.icon && link.url && link.color) {
-			links.push(`<a href="${link.url}" target="_blank" class="mr-5 mb-5"><custom-icon name="${link.icon}" size="32" color="${link.color}"></custom-icon></a>`);
-		}
-	}
-}
+let links = parsedData.links.map(link => { return `<a href="${link.url}" target="_blank" class="mr-5 mb-5"><custom-icon name="${link.icon}" size="32" color="${link.color}"></custom-icon></a>` }).join("\n");
 
 if (parsedData.profile) {
 	if (parsedData.profile.avatar) {
@@ -166,6 +159,5 @@ if (parsedData.profile) {
 
 indexHTML = indexHTML.replace("{WIDGETS}", widgets)
 indexHTML = indexHTML.replace("{BODYCLASS}", bodyClass.join(" "));
-log(links)
 indexHTML = indexHTML.replace("{SOCIALS}", links);
 log(indexHTML)
