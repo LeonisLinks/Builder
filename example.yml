@@ -18,8 +18,9 @@ profile:
   opacity: 20
   avatar: avatar.png
   layout: left
-  discord: 902671568856047636
+  discord: "902671568856047636"
   geolocation:
     latitude: 48.569045
     longitude: 7.6796789
 music: music.mp3
+backend: https://leonis.oriondev.fr

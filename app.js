@@ -29,11 +29,13 @@ if (fs.existsSync(output)) {
 execSync("git clone https://github.com/LeonisLinks/Leonis.git -b template", { stdio: "ignore" })
 let indexHTML;
 let mapHTML;
+let scriptTS;
 if (fs.existsSync("Leonis")) {
 	spinners[0].succeed("Leonis repository cloned successfully");
 	indexHTML = fs.readFileSync("./Leonis/index.html").toString();
 	mapHTML = fs.readFileSync("./Leonis/map.html").toString();
 	styleCSS = fs.readFileSync("./Leonis/src/style.css").toString();
+	scriptTS = fs.readFileSync("./Leonis/src/main.ts").toString();
 } else {
 	spinners[0].fail("Error cloning Leonis repository");
 	process.exit(1);
@@ -119,6 +121,7 @@ if (parsedData.music) {
 // Links
 let links = parsedData.links.map(link => { return `<a href="${link.url}" target="_blank" class="mr-5 mb-5"><custom-icon name="${link.icon}" size="32" color="${link.color}"></custom-icon></a>` }).join("\n");
 
+let backend = "https://leonis.oriondev.fr"
 if (parsedData.profile) {
 	if (parsedData.profile.avatar) {
 		if (fs.existsSync(getResourcePath(parsedData.profile.avatar))) {
@@ -148,11 +151,27 @@ if (parsedData.profile) {
 	styleCSS = styleCSS.replace("{OPACITY}", parsedData.profile.opacity);
 
 	if (parsedData.profile.discord) {
+		if (parsedData.backend) {
+			backend = parsedData.backend;
+			fetch(backend + "/").then(res => res.json()).then(data => {
+				if (!data.leonis) {
+					spinners[2].warn("Backend not found");
+					process.exit(1);
+				}
+			}).catch(e => {
+				spinners[2].warn("Backend not found");
+				process.exit(1);
+			})
+		}
+
+		scriptTS = scriptTS.replace("{API}", backend);
+		scriptTS = scriptTS.replace("{DISCORDID}", parsedData.profile.discord);
+
 		widgets += `<div id="discord" class="p-5 rounded-xl w-[50%] mr-2 ml-2 flex flex-row max-[1670px]:w-full max-[1670px]:mb-5">
-        	<img src="https://cdn.discordapp.com/avatars/902671568856047636/df9b91c56efa46acd37844b6313c4090.png?size=1024" class="rounded-full max-[390px]:w-[32px] max-[390px]:h-[32px]" width="64px" height="64px" alt="orion_off">
+        	<img src="" class="rounded-full max-[390px]:w-[32px] max-[390px]:h-[32px]" width="64px" height="64px" alt="">
         	<div id="informations" class="flex flex-col ml-5">
-          	<span id="discord_name" class="text-2xl max-[390px]:text-sm max-[430px]:text-lg">orion_off</span>
-          		<span id="discord_status" class="text-xl max-[390px]:text-xs max-[430px]:text-base">Elsässisch</span>
+          	<span id="discord_name" class="text-2xl max-[390px]:text-sm max-[430px]:text-lg"></span>
+          		<span id="discord_status" class="text-xl max-[390px]:text-xs max-[430px]:text-base"></span>
         	</div>
       	</div>`;
 	}
@@ -184,6 +203,7 @@ try {
 	fs.writeFileSync(`./Leonis/index.html`, indexHTML);
 	fs.writeFileSync(`./Leonis/map.html`, mapHTML);
 	fs.writeFileSync(`./Leonis/src/style.css`, styleCSS);
+	fs.writeFileSync(`./Leonis/src/main.ts`, scriptTS);
 
 	fs.cpSync("./resources", `./Leonis/resources`, { recursive: true });
 	spinners[3].succeed('Files written');
@@ -204,23 +224,33 @@ const config = {
 postcss([tailwindcss(config)]).process(css, { from: undefined }).then(result => {
 	fs.writeFileSync(`./Leonis/src/app.css`, result.toString());
 	spinners[4].succeed('TailwindCSS built');
+
+	// Building TS
+	spinners.push(ora('Building TypeScript').start());
+	esbuild.build({
+		entryPoints: ["./Leonis/src/main.ts"],
+		bundle: true,
+		minify: true,
+		outfile: "./Leonis/src/main.js",
+		platform: "browser"
+	}).then(() => {
+		spinners[5].succeed('TypeScript built');
+
+		// Rename output folder
+		spinners.push(ora('Renaming output folder').start());
+		try {
+			fs.renameSync("Leonis", output);
+			spinners[6].succeed('Output folder renamed');
+		} catch (e) {
+			spinners[6].fail('Error renaming output folder');
+			process.exit(1);
+		}
+	}).catch(e => {
+		spinners[5].fail('Error building TypeScript');
+		process.exit(1);
+	});
 }).catch(e => {
 	console.log(e);
 	spinners[4].fail('Error building TailwindCSS');
 	process.exit(1);
 })
-
-// Building TS
-spinners.push(ora('Building TypeScript').start());
-esbuild.build({
-	entryPoints: ["./Leonis/src/main.ts"],
-	bundle: true,
-	minify: true,
-	outfile: "./Leonis/src/main.js",
-	platform: "browser"
-}).then(() => {
-	spinners[5].succeed('TypeScript built');
-}).catch(e => {
-	spinners[5].fail('Error building TypeScript');
-	process.exit(1);
-});
