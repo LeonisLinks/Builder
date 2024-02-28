@@ -22,7 +22,7 @@ if (!output) output = "output"
 
 const spinners = [ora(`Cloning Leonis respository...`).start()];
 
-if (fs.existsSync(output)) {
+if (fs.existsSync(output) || fs.existsSync("Leonis")) {
 	spinners[0].fail(`Output folder already exists`);
 	process.exit(1);
 }
