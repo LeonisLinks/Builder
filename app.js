@@ -139,7 +139,7 @@ if (parsedData.profile) {
 	if (parsedData.profile.layout) {
 		layout = parsedData.profile.layout;
 		if (layout === "center") {
-			informationEl += ` <h1 id="name" class="text-5xl font-bold">${parsedData.name}</h1><p id="description" class="text-3xl mb-10">${parsedData.description}</p>`
+			informationEl += ` <h1 id="name" class="text-5xl font-bold">${parsedData.name}</h1><p id="description" class="text-3xl mb-10 text-center">${parsedData.description}</p>`
 		} else {
 			informationEl += `<div id="texts" class="flex flex-col"><h1 class="text-5xl font-bold">${parsedData.name}</h1><p id="description" class="text-3xl mb-10">${parsedData.description}</p></div>`
 		}
