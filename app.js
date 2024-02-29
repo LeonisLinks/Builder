@@ -54,6 +54,7 @@ try {
 	if (parsedData instanceof Error) return spinners[1].fail(`Error loading ${input}: ${parsedData.message}`);
 	if (!parsedData.name || !parsedData.description || !parsedData.background) return spinners[1].fail(`Error loading ${input}: Invalid data`);
 	if (!fs.existsSync("./resources/" + parsedData.background)) return spinners[1].fail(`Error loading ${parsedData.background}: File doesn't exists.`)
+	if (!parsedData.profile) parsedData.profile = {};
 
 	spinners[1].succeed(`${input} loaded`);
 } catch(e) {
