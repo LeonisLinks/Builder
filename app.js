@@ -153,6 +153,7 @@ if (parsedData.profile) {
 	}
 	styleCSS = styleCSS.replace("{OPACITY}", parsedData.profile.opacity);
 
+	let widgetsNum = 0;
 	if (parsedData.profile.discord) {
 		if (parsedData.backend) {
 			backend = parsedData.backend;
@@ -177,6 +178,7 @@ if (parsedData.profile) {
           		<span id="discord_status" class="text-xl max-[390px]:text-xs max-[430px]:text-base"></span>
         	</div>
       	</div>`;
+		widgetsNum++;
 	}
 
 	if (parsedData.profile.geolocation) {
@@ -185,6 +187,11 @@ if (parsedData.profile) {
       	</div>`;
 		mapHTML = mapHTML.replaceAll("{LAT}", parsedData.profile.geolocation.latitude)
 		mapHTML = mapHTML.replaceAll("{LNG}", parsedData.profile.geolocation.longitude)
+		widgetsNum++;
+	}
+
+	if (widgetsNum === 1) {
+		widgets = widgets.replace("w-[50%]", "w-full");
 	}
 }
 
