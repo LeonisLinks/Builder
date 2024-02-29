@@ -122,6 +122,8 @@ if (parsedData.music) {
 // Links
 let links = parsedData.links.map(link => { return `<a href="${link.url}" target="_blank" class="mr-5 mb-5"><custom-icon name="${link.icon}" size="32" color="${link.color}"></custom-icon></a>` }).join("\n");
 
+if (!parsedData.profile.layout) parsedData.profile.layout = "center";
+
 let backend = "https://leonis.oriondev.fr"
 if (parsedData.profile) {
 	if (parsedData.profile.avatar) {
